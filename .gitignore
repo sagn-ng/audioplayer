@@ -1,0 +1,8 @@
+# Created by venv; see https://docs.python.org/3/library/venv.html
+/sampleCppCode/
+.venv/
+/.vscode/
+Player_copy.py
+/Scripts/
+/Lib/
+/Include/
