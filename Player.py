@@ -3,81 +3,97 @@ from pygame import mixer, event
 import os
 import threading
 import time
+#We use 2 auxiliary threads running until the program is quit by us (see the quit() func.):
+#- one as a timer for songs
+#- the other one for switching songs and looping
 
 pygame.init()
-SONG_END=pygame.USEREVENT+1
-
-print(type(SONG_END)) #int
+SONG_END=pygame.USEREVENT+1 #mark the moment that a song ends as an event
 
 class MusicPlayer:
-
     def _task1(self)->None:
     #keep the program running even when the music is paused,
-    #it only stops when reaching the end of the song or it's
-    #shut down by mixer.music.stop()
-        while (mixer.music.get_busy() or self.isPaused):
-            if (not self.isPaused):
-                self.currPos+=1 #sync with time.sleep()
-            time.sleep(1) #make the main program work continuously and not get overloaded
+    #it only stops when the program
+        while self._isRunning:
+            time.sleep(0.1) #timer
+            if (mixer.music.get_busy() and (not self.isPaused) and self.currSong):
+            #only increase the song timer when there's a song
+                self.currPos+=0.1 #sync with time.sleep()
 
 
-    #we need a task on another thread to constantly check what to play next
     def _task2(self)->None:
-        while True:
+    #this task also works only when the program is quit.
+        while self._isRunning:
             time.sleep(0.1)
-            for ev in pygame.event.get():
-                if (ev.type==SONG_END): #if the player reaches the end of a song
+            for ev in event.get():
+                if (ev.type==SONG_END):
                     if (self.isLooped and self.currSong): #assign "and self.currSong" make it valid for the play() line
-                        self.play(self.currSong, startTime=0.0)
+                        self.play(self.currSong)
 
-                    elif len(self.myQueue)>0: #play the next song from the queue
+                    elif len(self.myQueue)>0:
                         nextSong=self.myQueue.pop(0)
-                        self.play(nextSong, startTime=0.0)
+                        self.play(nextSong)
+
+    #a func. that helps us load the music library
+    def _load_library(self)->None:
+        if (not os.path.exists(self.lib_folder)):
+            os.makedirs(self.lib_folder) #allow sub-folders
+
+        for file_dir in os.listdir(self.lib_folder):
+            name, ext=os.path.splitext(file_dir)
+
+            if (ext==".mp3" or ext==".wav" or ext==".ogg", ".m4a"):
+                self._store[name]=file_dir
 
     
-    def __init__(self) -> None:
-        mixer.music.set_endevent(SONG_END)
-
-        self._store=dict({}) #store[s] = path_of_s
-        for file_dir in os.listdir("musicLib"):
-            s=(file_dir.split('.'))[0]
-            self._store[s]=file_dir #keys are the names
-
-        self.myList=self._store.keys()
-        self.myQueue=[]
-        
-        self.t=None #the thread that is used to play music
-
-        self.isPaused, self.isLooped=False, False
-
-        self.currSong=None
-        self.currPos=0 #timer for the music
-
+    def __init__(self, lib_folder: str="musicLib") -> None:
         mixer.init()
+        time.sleep(0.1) #wait for "mixer" to start
+        mixer.music.set_endevent(SONG_END) #register the event we've created
         mixer.music.set_volume(0.5)
 
-        self._check_Song_Status=threading.Thread(target=self._task2, daemon=True)
-        self._check_Song_Status.start() #it will work till the end of the program
+        self.lib_folder=lib_folder
+        self._store=dict({}) #store[s] = path_of_s
+        self._load_library()
+
+        self.myQueue=[]
+        
+        self.t=None #the thread that is used to track the timer
+
+        self._isRunning, self.isPaused, self.isLooped=True, False, False
+
+        self.currSong, self.prevSong=None, None #prevSong is used for the playPrevious() method
+        self.currPos=0 #timer for the music
+    
+        self._check_Song_Status=threading.Thread(target=self._task2)
+        self._check_Song_Status.start()
+
+        self.t=threading.Thread(target=self._task1)
+        self.t.start()
+    #we don't use "daemon=True" since we want to manually quit the program
+
+    def quit(self)->None:
+        self._isRunning=False
+        time.sleep(0.15) #must be large enough so that _task1() can instantly update the program state
+        mixer.quit()
 
 
     def play(self, song: str, startTime: float = 0.0)->None:
         if (song not in self._store):
             print("This song is not in your list!")
             
-
         else:
             self.isPaused=False
             self.currPos=startTime
+
+            self.prevSong=self.currSong
             self.currSong=song
 
-            mixer.music.load(f"musicLib/{self._store[song]}")
+            mixer.music.load(f"{self.lib_folder}/{self._store[song]}")
             print(f"'{song}' is being played.")
 
             mixer.music.play(start=startTime)
             time.sleep(0.05) #wait for get_busy() to turn True
-
-            self.t=threading.Thread(target=self._task1)
-            self.t.start()
 
 
     def pause(self)->None:
@@ -128,8 +144,50 @@ class MusicPlayer:
         print(f"Loop mode has been turned {"On" if self.isLooped else "Off"}.")
 
 
+    def playPrevious(self)->None:
+        if (self.prevSong==None):
+            print("There is no previous song to play!")
+            return
+        
+        self.play(self.prevSong, startTime=0.0)
+
+
+    def playNext(self)->None:
+        if (len(self.myQueue)==0):
+            print("The queue is empty! No song to play next!")
+            return
+
+        x=self.myQueue.pop(0)
+        self.play(x, startTime=0.0)
+
+
+    def addToQueue(self, song: str)->None:
+        if (song not in self._store):
+            print("This song doesn't exist in our library!")
+            return
+
+        if (song in self.myQueue):
+            print("It's already in the queue!")
+            return
+
+        self.myQueue.append(song)
+
+
+    def removeFromQueue(self, song: str)->None:
+        #the current song that's being played is already not in the queue
+        #so we don't have to worry
+        if (song not in self.myQueue):
+            print("This song might not exist in our library or not in the queue yet!")
+            return
+
+        self.myQueue.remove(song)
+
+
 S=MusicPlayer()
-S.play("morning_flower")
-S.toggleLoop()
-time.sleep(36)
 S.play("m1")
+time.sleep(10)
+S.addToQueue("m2")
+S.addToQueue("m3")
+S.playNext()
+time.sleep(240)
+S.quit()
