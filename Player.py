@@ -197,32 +197,79 @@ class MusicPlayer:
 
     def addToPlaylist(self, pList: str, song: str)->None:
         if (not os.path.exists(f"{self._dir_for_pls}/{pList}")):
-            print(f"There is no playlist named '{pList}'")
+            print(f"There is no playlist named '{pList}'!")
         
         elif (song not in self._store):
             print(f"'{song}' doesn't exist in the default library!")
 
-        else:   
+        else:
             temp=[(song+x) for x in self._supportedFormats]
             for t in temp:
                 if (os.path.exists(f"{self._dir_for_pls}/{pList}/{t}")):
                     print(f"'{song}' already exists in this playlist!")
-                    break #if a file with the same name but different extension already exists
-                    return
-
+                    return #if a file with the same name but different extension already exist
+                    
             source=f"{self.lib_folder}/{self._store[song]}"
             destination=f"{self._dir_for_pls}/{pList}/{self._store[song]}"
             shutil.copyfile(source, destination)
             print(f"'{song}' has been added to '{pList}' successfully.")
 
 
+    def removeFromPlaylist(self, pList: str, song: str)->None:
+        if (not os.path.exists(f"{self._dir_for_pls}/{pList}")):
+            print(f"There is no playlist named '{pList}'!")
 
+        elif (not os.path.exists(f"{self._dir_for_pls}/{pList}/{self._store[song]}")):
+              print(f"'{song}' doesn't exist in this playlist!") #if the song doesn't exist in the playlist
+        
+        else:
+            os.remove(f"{self._dir_for_pls}/{pList}/{self._store[song]}")
+            print(f"'{song}' has been remove from '{pList}' successfully.")
+            
+
+    def addPlaylistToQueue(self, pList: str)->None:
+        if (not os.path.exists(f"{self._dir_for_pls}/{pList}")):
+            print(f"There is no playlist named '{pList}'!")
+
+        else:
+            file_dir_list=os.listdir(f"{self._dir_for_pls}/{pList}")
+            if (len(file_dir_list)==0):
+                print(f"'{pList}' is empty! Nothing to add.")
+                return
+
+            for file_dir in file_dir_list:
+                song=(file_dir.split('.'))[0]
+                self.myQueue.append(song)
+
+            print("Added to queue successfully.")
+
+
+    def deletePlaylist(self, pList: str)->None:
+        if (not os.path.exists(f"{self._dir_for_pls}/{pList}")):
+            print(f"There is no playlist named '{pList}'!")
+            return
+
+        os.remove(f"{self._dir_for_pls}/{pList}")
+        print(f"'{pList}' has been deleted.")
 
 
 S=MusicPlayer()
 S.play("m1")
-time.sleep(15)
+time.sleep(25)
+S.makeNewPlaylist("sample playlist")
 S.makeNewPlaylist("sample playlist")
 S.addToPlaylist("sampleplaylist", "m1")
+
+S.addToPlaylist("sample playlist", "m1")
+
+S.addToPlaylist("sample playlist", "m2")
+
+S.addToPlaylist("sample playlist", "m3")
+
+S.removeFromPlaylist("sampleplaylist", "m1")
+S.removeFromPlaylist("sample playlist", "m2")
+
+S.addPlaylistToQueue("sample playlist")
+
 time.sleep(5)
 S.quit()
