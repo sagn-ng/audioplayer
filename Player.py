@@ -1,8 +1,7 @@
 import pygame
 from pygame import mixer, event
-import os
-import threading
-import time
+import os, time, threading
+import shutil #for copying files
 #We use 2 auxiliary threads running until the program is quit by us (see the quit() func.):
 #- one as a timer for songs
 #- the other one for switching songs and looping
@@ -42,15 +41,19 @@ class MusicPlayer:
         for file_dir in os.listdir(self.lib_folder):
             name, ext=os.path.splitext(file_dir)
 
-            if (ext==".mp3" or ext==".wav" or ext==".ogg", ".m4a"):
-                self._store[name]=file_dir
-
+            if (ext in self._supportedFormats):
+                if (name not in self._store):
+                    self._store[name]=file_dir
+            #there might be cases where we have 'm1.mp3', 'm1.m4a', we choose to
+            #only take the first one found
     
     def __init__(self, lib_folder: str="musicLib") -> None:
         mixer.init()
         time.sleep(0.1) #wait for "mixer" to start
         mixer.music.set_endevent(SONG_END) #register the event we've created
         mixer.music.set_volume(0.5)
+
+        self._supportedFormats=[".mp3", ".wav", ".ogg", ".m4a"]
 
         self.lib_folder=lib_folder
         self._store=dict({}) #store[s] = path_of_s
@@ -183,11 +186,46 @@ class MusicPlayer:
         self.myQueue.remove(song)
 
 
+    def makeNewPlaylist(self, pList: str)->None:
+        if (pList==self.lib_folder):
+            print(f"Invalid name! {self.lib_folder} is the default music library.")
+            return
+        
+        elif (os.path.exists(pList)):
+            print("There's already a list with this name!")
+            return
+
+        os.makedirs(name=pList)
+
+
+    def addToPlaylist(self, pList: str, song: str)->None:
+        if (not os.path.exists(pList)):
+            print(f"There is no playlist named {pList}")
+        
+        elif (pList==self.lib_folder):
+            print(f"Invalid use! {self.lib_folder} cannot be modified.")
+
+        elif (song not in self._store):
+            print(f"{song} doesn't exist in the default library!")
+
+        else:   
+            temp=[(song+x) for x in self._supportedFormats]
+            for t in temp:
+                if (not os.path.exists(f"{pList}/{t}")):
+                    print("This song already exists in this playlist!")
+                    break
+
+            shutil.copyfile(f"{self.lib_folder}/{self._store[song]}", f"{pList}/{self._store[song]}")
+            print(f"{song} has been added to {pList} successfully.")
+
+
+
+
+
 S=MusicPlayer()
 S.play("m1")
-time.sleep(10)
-S.addToQueue("m2")
-S.addToQueue("m3")
-S.playNext()
-time.sleep(240)
+time.sleep(15)
+S.makeNewPlaylist("Sang's playlist")
+S.addToPlaylist("Sang's playlist", "m1")
+time.sleep(5)
 S.quit()
