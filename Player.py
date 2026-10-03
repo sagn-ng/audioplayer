@@ -47,7 +47,7 @@ class MusicPlayer:
             #there might be cases where we have 'm1.mp3', 'm1.m4a', we choose to
             #only take the first one found
     
-    def __init__(self, lib_folder: str="musicLib") -> None:
+    def __init__(self, lib_folder: str="musicLib", dir_for_pls: str="myPlaylists") -> None:
         mixer.init()
         time.sleep(0.1) #wait for "mixer" to start
         mixer.music.set_endevent(SONG_END) #register the event we've created
@@ -56,6 +56,7 @@ class MusicPlayer:
         self._supportedFormats=[".mp3", ".wav", ".ogg", ".m4a"]
 
         self.lib_folder=lib_folder
+        self._dir_for_pls=dir_for_pls
         self._store=dict({}) #store[s] = path_of_s
         self._load_library()
 
@@ -187,36 +188,32 @@ class MusicPlayer:
 
 
     def makeNewPlaylist(self, pList: str)->None:
-        if (pList==self.lib_folder):
-            print(f"Invalid name! {self.lib_folder} is the default music library.")
-            return
-        
-        elif (os.path.exists(pList)):
+        if (os.path.exists(f"{self._dir_for_pls}/{pList}")):
             print("There's already a list with this name!")
             return
 
-        os.makedirs(name=pList)
+        os.makedirs(name=f"{self._dir_for_pls}/{pList}")
 
 
     def addToPlaylist(self, pList: str, song: str)->None:
-        if (not os.path.exists(pList)):
-            print(f"There is no playlist named {pList}")
+        if (not os.path.exists(f"{self._dir_for_pls}/{pList}")):
+            print(f"There is no playlist named '{pList}'")
         
-        elif (pList==self.lib_folder):
-            print(f"Invalid use! {self.lib_folder} cannot be modified.")
-
         elif (song not in self._store):
-            print(f"{song} doesn't exist in the default library!")
+            print(f"'{song}' doesn't exist in the default library!")
 
         else:   
             temp=[(song+x) for x in self._supportedFormats]
             for t in temp:
-                if (not os.path.exists(f"{pList}/{t}")):
-                    print("This song already exists in this playlist!")
-                    break
+                if (os.path.exists(f"{self._dir_for_pls}/{pList}/{t}")):
+                    print(f"'{song}' already exists in this playlist!")
+                    break #if a file with the same name but different extension already exists
+                    return
 
-            shutil.copyfile(f"{self.lib_folder}/{self._store[song]}", f"{pList}/{self._store[song]}")
-            print(f"{song} has been added to {pList} successfully.")
+            source=f"{self.lib_folder}/{self._store[song]}"
+            destination=f"{self._dir_for_pls}/{pList}/{self._store[song]}"
+            shutil.copyfile(source, destination)
+            print(f"'{song}' has been added to '{pList}' successfully.")
 
 
 
@@ -225,7 +222,7 @@ class MusicPlayer:
 S=MusicPlayer()
 S.play("m1")
 time.sleep(15)
-S.makeNewPlaylist("Sang's playlist")
-S.addToPlaylist("Sang's playlist", "m1")
+S.makeNewPlaylist("sample playlist")
+S.addToPlaylist("sampleplaylist", "m1")
 time.sleep(5)
 S.quit()
