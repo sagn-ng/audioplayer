@@ -11,7 +11,7 @@ SONG_END=pygame.USEREVENT+1 #mark the moment that a song ends as an event
 
 class MusicPlayer:
     #_task1 and _task2 run until the program gets manually quit
-    def _task1(self)->None:
+    def __task1(self)->None:
         while self._isRunning:
             time.sleep(0.1) #timer
             if (mixer.music.get_busy() and (not self._isPaused) and self._currSong):
@@ -19,7 +19,7 @@ class MusicPlayer:
                 self._currPos+=0.1 #sync with time.sleep()
 
 
-    def _task2(self)->None:
+    def __task2(self)->None:
         while self._isRunning:
             time.sleep(0.1)
             for ev in event.get():
@@ -50,9 +50,9 @@ class MusicPlayer:
         for file_dir in os.listdir(self.lib_folder):
             name, ext=os.path.splitext(file_dir)
 
-            if (ext in self._supportedFormats):
-                if (name not in self._store):
-                    self._store[name]=file_dir
+            if (ext in self.__supportedFormats):
+                if (name not in self.__store):
+                    self.__store[name]=file_dir
             #there might be cases where we have 'm1.mp3', 'm1.m4a', we choose to
             #only take the first one found
     
@@ -62,11 +62,11 @@ class MusicPlayer:
         mixer.music.set_endevent(SONG_END) #register the event we've created
         mixer.music.set_volume(0.5)
 
-        self._supportedFormats=[".mp3", ".wav", ".ogg", ".m4a"]
+        self.__supportedFormats=[".mp3", ".wav", ".ogg", ".m4a"]
 
         self.lib_folder=lib_folder
-        self._dir_for_pls=dir_for_pls
-        self._store=dict({}) #store[s] = path_of_s
+        self.__dir_for_pls=dir_for_pls
+        self.__store=dict({}) #store[s] = path_of_s
         self._load_library()
 
         self.myQueue=[]
@@ -79,10 +79,10 @@ class MusicPlayer:
         self._currSong, self._prevSong=None, None #prevSong is used for the playPrevious() method
         self._currPos=0 #timer for the music
     
-        self._check_Song_Status=threading.Thread(target=self._task2)
+        self._check_Song_Status=threading.Thread(target=self.__task2)
         self._check_Song_Status.start()
 
-        self._t=threading.Thread(target=self._task1)
+        self._t=threading.Thread(target=self.__task1)
         self._t.start()
     #we don't use "daemon=True" since we want to manually quit the program
 
@@ -93,7 +93,7 @@ class MusicPlayer:
 
 
     def play(self, song: str, startTime: float = 0.0)->None:
-        if (song not in self._store):
+        if (song not in self.__store):
             print("This song is not in your list!")
             
         else:
@@ -103,7 +103,7 @@ class MusicPlayer:
             self._prevSong=self._currSong
             self._currSong=song
 
-            mixer.music.load(f"{self.lib_folder}/{self._store[song]}")
+            mixer.music.load(f"{self.lib_folder}/{self.__store[song]}")
             print(f"'{song}' is being played.")
 
             mixer.music.play(start=startTime)
@@ -178,7 +178,7 @@ class MusicPlayer:
 
 
     def addToQueue(self, song: str)->None:
-        if (song not in self._store):
+        if (song not in self.__store):
             print("This song doesn't exist in our library!")
             return
 
@@ -200,51 +200,51 @@ class MusicPlayer:
 
 
     def makeNewPlaylist(self, pList: str)->None:
-        if (os.path.exists(f"{self._dir_for_pls}/{pList}")):
+        if (os.path.exists(f"{self.__dir_for_pls}/{pList}")):
             print("There's already a list with this name!")
             return
 
-        os.makedirs(name=f"{self._dir_for_pls}/{pList}")
+        os.makedirs(name=f"{self.__dir_for_pls}/{pList}")
 
 
     def addToPlaylist(self, pList: str, song: str)->None:
-        if (not os.path.exists(f"{self._dir_for_pls}/{pList}")):
+        if (not os.path.exists(f"{self.__dir_for_pls}/{pList}")):
             print(f"There is no playlist named '{pList}'!")
         
-        elif (song not in self._store):
+        elif (song not in self.__store):
             print(f"'{song}' doesn't exist in the default library!")
 
         else:
-            temp=[(song+x) for x in self._supportedFormats]
+            temp=[(song+x) for x in self.__supportedFormats]
             for t in temp:
-                if (os.path.exists(f"{self._dir_for_pls}/{pList}/{t}")):
+                if (os.path.exists(f"{self.__dir_for_pls}/{pList}/{t}")):
                     print(f"'{song}' already exists in this playlist!")
                     return #if a file with the same name but different extension already exist
                     
-            source=f"{self.lib_folder}/{self._store[song]}"
-            destination=f"{self._dir_for_pls}/{pList}/{self._store[song]}"
+            source=f"{self.lib_folder}/{self.__store[song]}"
+            destination=f"{self.__dir_for_pls}/{pList}/{self.__store[song]}"
             shutil.copyfile(source, destination)
             print(f"'{song}' has been added to '{pList}' successfully.")
 
 
     def removeFromPlaylist(self, pList: str, song: str)->None:
-        if (not os.path.exists(f"{self._dir_for_pls}/{pList}")):
+        if (not os.path.exists(f"{self.__dir_for_pls}/{pList}")):
             print(f"There is no playlist named '{pList}'!")
 
-        elif (not os.path.exists(f"{self._dir_for_pls}/{pList}/{self._store[song]}")):
+        elif (not os.path.exists(f"{self.__dir_for_pls}/{pList}/{self.__store[song]}")):
               print(f"'{song}' doesn't exist in this playlist!") #if the song doesn't exist in the playlist
         
         else:
-            os.remove(f"{self._dir_for_pls}/{pList}/{self._store[song]}")
+            os.remove(f"{self.__dir_for_pls}/{pList}/{self.__store[song]}")
             print(f"'{song}' has been remove from '{pList}' successfully.")
             
 
     def addPlaylistToQueue(self, pList: str)->None:
-        if (not os.path.exists(f"{self._dir_for_pls}/{pList}")):
+        if (not os.path.exists(f"{self.__dir_for_pls}/{pList}")):
             print(f"There is no playlist named '{pList}'!")
 
         else:
-            file_dir_list=os.listdir(f"{self._dir_for_pls}/{pList}")
+            file_dir_list=os.listdir(f"{self.__dir_for_pls}/{pList}")
             if (len(file_dir_list)==0):
                 print(f"'{pList}' is empty! Nothing to add.")
                 return
@@ -257,11 +257,11 @@ class MusicPlayer:
 
 
     def loopPlaylist(self, pList: str)->None:
-        if (not os.path.exists(f"{self._dir_for_pls}/{pList}")):
+        if (not os.path.exists(f"{self.__dir_for_pls}/{pList}")):
             print(f"There is no playlist named '{pList}'!")
             return
 
-        file_dir_list=os.listdir(f"{self._dir_for_pls}/{pList}")
+        file_dir_list=os.listdir(f"{self.__dir_for_pls}/{pList}")
 
         if (len(file_dir_list)==0):
             print(f"'{pList}' is empty! Nothing to loop.")
@@ -280,12 +280,12 @@ class MusicPlayer:
 
 
     def deletePlaylist(self, pList: str)->None:
-        if (not os.path.exists(f"{self._dir_for_pls}/{pList}")):
+        if (not os.path.exists(f"{self.__dir_for_pls}/{pList}")):
             print(f"There is no playlist named '{pList}'!")
             return
         #os.remove only works for files, os.rmdir only works for empty directories,
         #os.removedirs even delete 'upwards'
-        shutil.rmtree(f"{self._dir_for_pls}/{pList}")
+        shutil.rmtree(f"{self.__dir_for_pls}/{pList}")
         print(f"'{pList}' has been deleted.")
 
 
