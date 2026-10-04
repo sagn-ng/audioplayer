@@ -10,35 +10,35 @@ pygame.init()
 SONG_END=pygame.USEREVENT+1 #mark the moment that a song ends as an event
 
 class MusicPlayer:
-    #_task1 and _task2 run until the program gets manually quit
-    def __task1(self)->None:
-        while self._isRunning:
+    #__task1 and __task2 run until the program gets manually quit
+    def ___task1(self)->None:
+        while self.__isRunning:
             time.sleep(0.1) #timer
-            if (mixer.music.get_busy() and (not self._isPaused) and self._currSong):
+            if (mixer.music.get_busy() and (not self.__isPaused) and self.__currSong):
             #only increase the song timer when there's a song
-                self._currPos+=0.1 #sync with time.sleep()
+                self.__currPos+=0.1 #sync with time.sleep()
 
 
-    def __task2(self)->None:
-        while self._isRunning:
+    def ___task2(self)->None:
+        while self.__isRunning:
             time.sleep(0.1)
             for ev in event.get():
-                if (ev.type==SONG_END): #we'll apply 'and self._currSong' to define it not None (in fact that's true)
+                if (ev.type==SONG_END): #we'll apply 'and self.__currSong' to define it not None (in fact that's true)
                     #single loop > playlist loop
-                    if (self._isLooped and self._currSong):
-                        self.play(self._currSong)
+                    if (self.__isLooped and self.__currSong):
+                        self.play(self.__currSong)
 
                     #the single loop is Off
-                    elif (self._listLooped and self._currSong): #playlist loop = On
+                    elif (self.__listLooped and self.__currSong): #playlist loop = On
                         if (len(self.myQueue)>0): #if there are at least 2 songs in the playlist
-                            self.myQueue.append(self._currSong)
+                            self.myQueue.append(self.__currSong)
                             nextSong=self.myQueue.pop(0)
                             self.play(nextSong)
 
-                        elif (self._currSong): #the playlist contains only 1 song
-                            self.play(self._currSong)
+                        elif (self.__currSong): #the playlist contains only 1 song
+                            self.play(self.__currSong)
 
-                    elif (len(self.myQueue)>0): #playlist loop = Off, i.e self._listLooped=False
+                    elif (len(self.myQueue)>0): #playlist loop = Off, i.e self.__listLooped=False
                         nextSong=self.myQueue.pop(0)
                         self.play(nextSong)
 
@@ -71,24 +71,24 @@ class MusicPlayer:
 
         self.myQueue=[]
         
-        self._t=None #the thread that is used to track the timer
+        self.__t=None #the thread that is used to track the timer
 
-        self._isRunning, self._isPaused, self._isLooped=True, False, False
-        self._listLooped=False
+        self.__isRunning, self.__isPaused, self.__isLooped=True, False, False
+        self.__listLooped=False
 
-        self._currSong, self._prevSong=None, None #prevSong is used for the playPrevious() method
-        self._currPos=0 #timer for the music
+        self.__currSong, self.__prevSong=None, None #prevSong is used for the playPrevious() method
+        self.__currPos=0 #timer for the music
     
-        self._check_Song_Status=threading.Thread(target=self.__task2)
-        self._check_Song_Status.start()
+        self.__check_Song_Status=threading.Thread(target=self.___task2)
+        self.__check_Song_Status.start()
 
-        self._t=threading.Thread(target=self.__task1)
-        self._t.start()
+        self.__t=threading.Thread(target=self.___task1)
+        self.__t.start()
     #we don't use "daemon=True" since we want to manually quit the program
 
     def quit(self)->None:
-        self._isRunning=False
-        time.sleep(0.15) #must be large enough so that _task1() can instantly update the program state
+        self.__isRunning=False
+        time.sleep(0.15) #must be large enough so that __task1() can instantly update the program state
         mixer.quit()
 
 
@@ -97,11 +97,11 @@ class MusicPlayer:
             print("This song is not in your list!")
             
         else:
-            self._isPaused=False
-            self._currPos=startTime
+            self.__isPaused=False
+            self.__currPos=startTime
 
-            self._prevSong=self._currSong
-            self._currSong=song
+            self.__prevSong=self.__currSong
+            self.__currSong=song
 
             mixer.music.load(f"{self.lib_folder}/{self.__store[song]}")
             print(f"'{song}' is being played.")
@@ -111,8 +111,8 @@ class MusicPlayer:
 
 
     def pause(self)->None:
-        if (self._isPaused==False):
-            self._isPaused=True
+        if (self.__isPaused==False):
+            self.__isPaused=True
             mixer.music.pause()
             
         else:
@@ -120,52 +120,52 @@ class MusicPlayer:
 
 
     def unpause(self)->None:
-        if (self._isPaused==False):
+        if (self.__isPaused==False):
             print("No song is being paused!")
 
         else:
         #at this moment: get_busy()=False, isPaused=True
         #we need to set isPause=False and unpause() (i.e get_busy()=True), but:
-        #if we set isPause=False first, the while loop in _task immediately stops
+        #if we set isPause=False first, the while loop in __task immediately stops
         #since it's updated continuously -> put unpause() first.
         #However, unpause() takes a couple of miliseconds to work, we need to stop
         #the time on the main thread to wait for it:
             mixer.music.unpause()
             time.sleep(0.05)
-            self._isPaused=False
+            self.__isPaused=False
 
 
     def restart(self)->None:
         mixer.music.rewind()
-        self._currPos=0
-        if (self._isPaused==True):
+        self.__currPos=0
+        if (self.__isPaused==True):
             time.sleep(0.05) #wait for get_busy() to turn True
-            self._isPaused=False
+            self.__isPaused=False
 
 
     def rewind5s(self)->None:
-        self._currPos=max(0.0, self._currPos-6)
-        mixer.music.play(start=self._currPos)
+        self.__currPos=max(0.0, self.__currPos-6)
+        mixer.music.play(start=self.__currPos)
 
 
     def forward5s(self)->None:
-        self._currPos+=4
-        mixer.music.play(start=self._currPos)
+        self.__currPos+=4
+        mixer.music.play(start=self.__currPos)
 
     #modifying the "loops" arugment in play() and queue() doesn't affect
     def toggleLoop(self)->None:
-        self._isLooped=not self._isLooped
-        if (self._isLooped):
-            self._listLooped=False #if single loop is On, turn off playlist loop
-        print(f"Loop mode has been turned {"On" if self._isLooped else "Off"}.")
+        self.__isLooped=not self.__isLooped
+        if (self.__isLooped):
+            self.__listLooped=False #if single loop is On, turn off playlist loop
+        print(f"Loop mode has been turned {"On" if self.__isLooped else "Off"}.")
 
 
     def playPrevious(self)->None:
-        if (self._prevSong==None):
+        if (self.__prevSong==None):
             print("There is no previous song to play!")
             return
         
-        self.play(self._prevSong, startTime=0.0)
+        self.play(self.__prevSong, startTime=0.0)
 
 
     def playNext(self)->None:
@@ -267,8 +267,8 @@ class MusicPlayer:
             print(f"'{pList}' is empty! Nothing to loop.")
             return
 
-        self._isLooped=False
-        self._listLooped=True #turn off single loop, activate playlist loop
+        self.__isLooped=False
+        self.__listLooped=True #turn off single loop, activate playlist loop
         
         songs=[os.path.splitext(file_dir)[0] for file_dir in file_dir_list]
         self.play(songs[0])
@@ -302,7 +302,7 @@ S.removeFromPlaylist("sample playlist", "m2")
 
 S.loopPlaylist("sample playlist")
 
-
+print(S.__isRunning)
 
 time.sleep(300)
 S.deletePlaylist("sample playlist")
