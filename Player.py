@@ -6,10 +6,8 @@ import shutil #for copying files and deleting playlist
 #- one as a timer for songs
 #- the other one for switching songs and looping
 
-pygame.init()
-SONG_END=pygame.USEREVENT+1 #mark the moment that a song ends as an event
-
 class MusicPlayer:
+    SONG_END=pygame.USEREVENT+1 #mark the moment that a song ends as an event
     #__task1 and __task2 run until the program gets manually quit
     def ___task1(self)->None:
         while self.__isRunning:
@@ -23,7 +21,7 @@ class MusicPlayer:
         while self.__isRunning:
             time.sleep(0.1)
             for ev in event.get():
-                if (ev.type==SONG_END): #we'll apply 'and self.__currSong' to define it not None (in fact that's true)
+                if (ev.type==self.SONG_END): #we'll apply 'and self.__currSong' to define it not None (in fact that's true)
                     #single loop > playlist loop
                     if (self.__isLooped and self.__currSong):
                         self.play(self.__currSong)
@@ -57,9 +55,10 @@ class MusicPlayer:
             #only take the first one found
     
     def __init__(self, lib_folder: str="musicLib", dir_for_pls: str="myPlaylists") -> None:
+        pygame.init()
         mixer.init()
         time.sleep(0.1) #wait for "mixer" to start
-        mixer.music.set_endevent(SONG_END) #register the event we've created
+        mixer.music.set_endevent(self.SONG_END) #register the event we've created
         mixer.music.set_volume(0.5)
 
         self.__supportedFormats=[".mp3", ".wav", ".ogg", ".m4a"]
@@ -302,7 +301,6 @@ S.removeFromPlaylist("sample playlist", "m2")
 
 S.loopPlaylist("sample playlist")
 
-print(S.__isRunning)
 
 time.sleep(300)
 S.deletePlaylist("sample playlist")
