@@ -9,7 +9,7 @@ import shutil #for copying files and deleting playlist
 class MusicPlayer:
     SONG_END=pygame.USEREVENT+1 #mark the moment that a song ends as an event
     #__task1 and __task2 run until the program gets manually quit
-    def ___task1(self)->None:
+    def __task1(self)->None:
         while self.__isRunning:
             time.sleep(0.1) #timer
             if (mixer.music.get_busy() and (not self.__isPaused) and self.__currSong):
@@ -17,7 +17,7 @@ class MusicPlayer:
                 self.__currPos+=0.1 #sync with time.sleep()
 
 
-    def ___task2(self)->None:
+    def __task2(self)->None:
         while self.__isRunning:
             time.sleep(0.1)
             for ev in event.get():
@@ -41,7 +41,7 @@ class MusicPlayer:
                         self.play(nextSong)
 
     #a func. that helps us load the music library
-    def _load_library(self)->None:
+    def __load_library(self)->None:
         if (not os.path.exists(self.lib_folder)):
             os.makedirs(self.lib_folder) #allow sub-folders
 
@@ -66,7 +66,7 @@ class MusicPlayer:
         self.lib_folder=lib_folder
         self.__dir_for_pls=dir_for_pls
         self.__store=dict({}) #store[s] = path_of_s
-        self._load_library()
+        self.__load_library()
 
         self.myQueue=[]
         
@@ -78,10 +78,10 @@ class MusicPlayer:
         self.__currSong, self.__prevSong=None, None #prevSong is used for the playPrevious() method
         self.__currPos=0 #timer for the music
     
-        self.__check_Song_Status=threading.Thread(target=self.___task2)
+        self.__check_Song_Status=threading.Thread(target=self.__task2)
         self.__check_Song_Status.start()
 
-        self.__t=threading.Thread(target=self.___task1)
+        self.__t=threading.Thread(target=self.__task1)
         self.__t.start()
     #we don't use "daemon=True" since we want to manually quit the program
 
@@ -132,6 +132,11 @@ class MusicPlayer:
             mixer.music.unpause()
             time.sleep(0.05)
             self.__isPaused=False
+
+
+    def PauseOrUnpause(self)->None:
+        if (self.__isPaused): self.unpause()
+        else: self.pause()
 
 
     def restart(self)->None:
@@ -288,20 +293,21 @@ class MusicPlayer:
         print(f"'{pList}' has been deleted.")
 
 
-S=MusicPlayer()
-S.makeNewPlaylist("sample playlist")
+if (__name__=="__main__"):
+    S=MusicPlayer()
+    S.makeNewPlaylist("sample playlist")
 
-S.addToPlaylist("sample playlist", "m4")
+    S.addToPlaylist("sample playlist", "m4")
 
-S.addToPlaylist("sample playlist", "m2")
+    S.addToPlaylist("sample playlist", "m2")
 
-S.addToPlaylist("sample playlist", "morning_flower")
+    S.addToPlaylist("sample playlist", "morning_flower")
 
-S.removeFromPlaylist("sample playlist", "m2")
+    S.removeFromPlaylist("sample playlist", "m2")
 
-S.loopPlaylist("sample playlist")
+    S.loopPlaylist("sample playlist")
 
 
-time.sleep(300)
-S.deletePlaylist("sample playlist")
-S.quit()
+    time.sleep(300)
+    S.deletePlaylist("sample playlist")
+    S.quit()
