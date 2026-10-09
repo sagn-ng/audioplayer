@@ -1,31 +1,66 @@
-import Player
 from Player import MusicPlayer
-import pygame, keyboard, time
+import pygame, time
+from prompt_toolkit import prompt, application
+from prompt_toolkit.key_binding import KeyBindings
 
 class CL_Interface:
     def __loadKeys(self)->None:
-        keyboard.add_hotkey('shift+esc', self.myPlayer.quit)
+        self.myKeys=KeyBindings()
 
-        keyboard.add_hotkey('space', self.myPlayer.PauseOrUnpause)
-        keyboard.add_hotkey('ctrl+l', self.myPlayer.toggleLoop)
+        @self.myKeys.add('s-escape')
+        def _(e):
+            self.myPlayer.quit()
+            e.app.exit()
+
+        @self.myKeys.add('s')
+        def _(e):
+            def ask_song():
+                song=str(input("\nSearch for a song: "))
+                self.myPlayer.play(song)
+            application.run_in_terminal(ask_song)
+            
+        @self.myKeys.add('space')
+        def _(e):
+            self.myPlayer.PauseOrUnpause()
+
+        @self.myKeys.add('s-left')
+        def _(e):
+            self.myPlayer.playPrevious()
+
+        @self.myKeys.add('s-right')
+        def _(e):
+            self.myPlayer.playNext()
+
+        @self.myKeys.add('left')
+        def _(e):
+            self.myPlayer.rewind5s()
+
+        @self.myKeys.add('right')
+        def _(e):
+            self.myPlayer.forward5s()
 
 
-        keyboard.add_hotkey('shift+right', self.myPlayer.playNext)
-        keyboard.add_hotkey('shift+left', self.myPlayer.playPrevious)
+    def __run(self)->None:
+        while True:
+            try:
+                self.printMenu()
+                choice=prompt("Enter choice: ", key_bindings=self.myKeys)
+                if (choice.strip()=="6"): break
 
-        keyboard.add_hotkey('right', self.myPlayer.forward5s)
-        keyboard.add_hotkey('left', self.myPlayer.rewind5s)
-
+            except (KeyboardInterrupt, EOFError):
+                self.myPlayer.quit()
+                break
 
 
     def __init__(self) -> None:
         self.myPlayer=MusicPlayer()
+        self.hotkeys=dict({})
 
         self.__loadKeys()
 
         self.printMenu()
 
-    
+        self.__run()
 
     def printMenu(self)->None:
         print("\n" + "="*30)
@@ -37,8 +72,11 @@ class CL_Interface:
         print("4. Queue management")
         print("5. Playlist management")
         print("6. Thoát (Quit)") #easy
-
-
+ 
+    #def searchToPlay(self)->None:
+    # 
+    #def QueueManagement(self)->None:
+    #
+    #def PlaylistManagement(self)->None:     
 
 A=CL_Interface()
-A.myPlayer.loopPlaylist("sample playlist")
