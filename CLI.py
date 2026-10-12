@@ -1,33 +1,31 @@
 from Player import MusicPlayer
-import pygame, time
-from prompt_toolkit import prompt, application
+import pygame, time, asyncio
+from prompt_toolkit import prompt
+from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit.key_binding import KeyBindings
 
 class CL_Interface:
     def __loadKeys(self)->None:
         self.myKeys=KeyBindings()
 
-        @self.myKeys.add('s-escape')
+        @self.myKeys.add('escape','q')
         def _(e):
             self.myPlayer.quit()
-            e.app.exit()
+            e.app.exit(result="6")
 
         @self.myKeys.add('s')
         def _(e):
-            def ask_song():
-                song=str(input("\nSearch for a song: "))
-                self.myPlayer.play(song)
-            application.run_in_terminal(ask_song)
+            e.app.exit(result="1")
             
         @self.myKeys.add('space')
         def _(e):
             self.myPlayer.PauseOrUnpause()
 
-        @self.myKeys.add('s-left')
+        @self.myKeys.add('c-left')
         def _(e):
             self.myPlayer.playPrevious()
 
-        @self.myKeys.add('s-right')
+        @self.myKeys.add('c-right')
         def _(e):
             self.myPlayer.playNext()
 
@@ -39,13 +37,26 @@ class CL_Interface:
         def _(e):
             self.myPlayer.forward5s()
 
-
     def __run(self)->None:
         while True:
             try:
                 self.printMenu()
                 choice=prompt("Enter choice: ", key_bindings=self.myKeys)
-                if (choice.strip()=="6"): break
+
+                if (choice=="1"):
+                    print()
+                    song=input("Search for a song (leave blank to go back): ")
+                    if (song==""):
+                        print("...Coming back to menu...")
+                        continue
+
+                    self.myPlayer.play(song)
+
+
+
+                if (choice=="6"):
+                    self.myPlayer.quit()
+                    break
 
             except (KeyboardInterrupt, EOFError):
                 self.myPlayer.quit()
@@ -57,8 +68,6 @@ class CL_Interface:
         self.hotkeys=dict({})
 
         self.__loadKeys()
-
-        self.printMenu()
 
         self.__run()
 
