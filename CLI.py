@@ -1,9 +1,8 @@
 from Player import MusicPlayer
-import pygame, time, asyncio
+import pygame, time
 from prompt_toolkit import prompt
-from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.shortcuts import radiolist_dialog
+from prompt_toolkit.shortcuts import radiolist_dialog, input_dialog
 
 class CL_Interface:
     def __loadKeys(self)->None:
@@ -39,8 +38,8 @@ class CL_Interface:
             self.myPlayer.forward5s()
 
     def __searchSong(self: CL_Interface)->str:
-        print()
-        song=input("Search for a song (leave blank to go back): ")
+        song=str(input_dialog(text="Search window",
+                              title="Search for a song (cancel or leave blank to go back):").run())
         return song
 
     def __run(self)->None:
@@ -53,13 +52,19 @@ class CL_Interface:
 
                 if (choice=="1"):
                     song=self.__searchSong()
-                    if (song==""): print("...Coming back to menu...")
-                    else: self.myPlayer.play(song)
+                    if (song==""):
+                        print("...Coming back to menu...")
+                        continue
 
-                if (choice=="2"):
+                    print(f"You searched for the song '{song}'.")
+                    self.myPlayer.play(song)
+#####
+
+                elif (choice=="2"):
                     self.myPlayer.PauseOrUnpause()
 #####
-                if (choice=="3"):
+
+                elif (choice=="3"):
                     t=True
                     while (t):
                         print("Press 'n' or 'ctrl+left' to play the next.")
@@ -78,27 +83,53 @@ class CL_Interface:
                                 t=False
                             case _:
                                 print("Invalid choice!")
-                                print("Choose again!")                  
+                                print("Choose again!")  
 ######
 
-                if (choice=="4"):
+                elif (choice=="4"):
                     result = radiolist_dialog(
                         title="Choice dialog",
                         text="Which one do you choose?",
                         values=[
                             ("a", "Add a new song to queue"),
                             ("rm", "Remove a song from queue"),
+                            ("p", "Show the queue"),
+                            ("q", "Quit this dialog")
                         ]
                     ).run()
-
-                    if (result=="a"):
+                    #if user chooses 'add' or 'remove'
+                    if (result=="a" or result=="rm"):
                         song=self.__searchSong()
-                        if (song==""): print("...Coming back to menu...")
-                        else: self.myPlayer.addToQueue(song)
+                        if (song==""):
+                            print("...Coming back to menu...")
+                            continue
 
-                if (choice=="6"):
+                        print(f"You searched for the song '{song}'.")
+                        if (result=="a"): self.myPlayer.addToQueue(song)
+                        else: self.myPlayer.removeFromQueue(song)
+
+                    #if user chooses 'print'
+                    elif (result=="p"):
+                        if (not self.myPlayer.myQueue):
+                            print("The queue is empty! Nothing to show.")
+                            continue
+
+                        i=1
+                        for x in self.myPlayer.myQueue:
+                            print(f"{i}. {x}")
+                            i+=1
+
+                    #if user chooses 'quit'
+                    else: print("...Coming back to menu...")
+#####
+
+                elif (choice=="6"):
                     self.myPlayer.quit()
                     break
+
+#####
+                else:
+                    print("Invalid choice!")
 
             except (KeyboardInterrupt, EOFError):
                 self.myPlayer.quit()
@@ -118,8 +149,8 @@ class CL_Interface:
         print("       MUSIC PLAYER MENU")
         print("="*30)
         print("1. Play a song (Search)") #done
-        print("2. Pause/Unpause") #done
-        print("3. Next / Prev")
+        print("2. Pause/Unpause/Loop") #done
+        print("3. Previous/Next")
         print("4. Queue management") #doing
         print("5. Playlist management")
         print("6. Thoát (Quit)") #done
