@@ -3,6 +3,7 @@ import pygame, time
 from prompt_toolkit import prompt
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.shortcuts import radiolist_dialog, input_dialog
+from prompt_toolkit.styles import Style #for styling dialogs
 
 class CL_Interface:
     def __loadKeys(self)->None:
@@ -19,7 +20,11 @@ class CL_Interface:
             
         @self.myKeys.add('space')
         def _(e):
-            e.app.exit(result="2")
+            self.myPlayer.PauseOrUnpause()
+
+        @self.myKeys.add('escape','l')
+        def _(e):
+            self.myPlayer.toggleLoop()
 
         @self.myKeys.add('c-left')
         def _(e):
@@ -39,7 +44,7 @@ class CL_Interface:
 
     def __searchSong(self: CL_Interface)->str:
         song=str(input_dialog(text="Search window",
-                              title="Search for a song (cancel or leave blank to go back):").run())
+                              title="Search for a song (cancel or leave blank to go back):", style=self.__style).run())
         return song
 
     def __run(self)->None:
@@ -48,10 +53,11 @@ class CL_Interface:
             try:
                 if (marker%3==0): self.printMenu() #only print the menu every 3 times
                 marker+=1
-                choice=prompt("Enter choice: ", key_bindings=self.myKeys)
+                choice=prompt("Enter choice:\n>> ", key_bindings=self.myKeys)
 
                 if (choice=="1"):
                     song=self.__searchSong()
+                    print()
                     if (song==""):
                         print("...Coming back to menu...")
                         continue
@@ -61,16 +67,17 @@ class CL_Interface:
 #####
 
                 elif (choice=="2"):
-                    self.myPlayer.PauseOrUnpause()
+                    print("\nPress 'space' to pause/unpause and 'alt+L' to loop/unloop the current song.")
 #####
 
                 elif (choice=="3"):
+                    print()
                     t=True
                     while (t):
                         print("Press 'n' or 'ctrl+left' to play the next.")
                         print("Press 'p' or 'ctrl+right' to play the previous song.")
                         print("Leave blank to go back.")
-                        x=input("Your choice: ")
+                        x=prompt(">> ", key_bindings=self.myKeys, style=self.__style)
                         match (x):
                             case 'n':
                                 self.myPlayer.playNext()
@@ -82,7 +89,7 @@ class CL_Interface:
                                 print("...Coming back to menu...")
                                 t=False
                             case _:
-                                print("Invalid choice!")
+                                print("Invalid choice or choice not included here!")
                                 print("Choose again!")  
 ######
 
@@ -95,8 +102,10 @@ class CL_Interface:
                             ("rm", "Remove a song from queue"),
                             ("p", "Show the queue"),
                             ("q", "Quit this dialog")
-                        ]
+                        ],
+                        style=self.__style
                     ).run()
+                    print()
                     #if user chooses 'add' or 'remove'
                     if (result=="a" or result=="rm"):
                         song=self.__searchSong()
@@ -140,6 +149,11 @@ class CL_Interface:
         self.myPlayer=MusicPlayer()
         self.hotkeys=dict({})
 
+        self.__style=Style.from_dict({
+            'dialog': 'bg:#0066ff',
+            'dialog.body': 'bg:#000000 #ff0000'
+        }) #self-created style for dialogs
+
         self.__loadKeys()
 
         self.__run()
@@ -151,7 +165,7 @@ class CL_Interface:
         print("1. Play a song (Search)") #done
         print("2. Pause/Unpause/Loop") #done
         print("3. Previous/Next")
-        print("4. Queue management") #doing
+        print("4. Queue management") #done
         print("5. Playlist management")
         print("6. Thoát (Quit)") #done
  
