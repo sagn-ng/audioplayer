@@ -43,8 +43,8 @@ class CL_Interface:
             self.myPlayer.forward5s()
 
     def __searchSong(self: CL_Interface)->str:
-        song=str(input_dialog(text="Search window",
-                              title="Search for a song (cancel or leave blank to go back):", style=self.__style).run())
+        song=str(input_dialog(text="Search for a song (cancel or leave blank to go back):",
+                              title="Search window", style=self.__style).run())
         return song
 
     def __run(self)->None:
@@ -95,7 +95,7 @@ class CL_Interface:
 
                 elif (choice=="4"):
                     result = radiolist_dialog(
-                        title="Choice dialog",
+                        title="Queue commands dialog",
                         text="Which one do you choose?",
                         values=[
                             ("a", "Add a new song to queue"),
