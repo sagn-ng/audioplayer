@@ -209,6 +209,7 @@ class MusicPlayer:
             return
 
         os.makedirs(name=f"{self.__dir_for_pls}/{pList}")
+        print(f"Playlist '{pList}' has been created successfully.")
 
 
     def addToPlaylist(self, pList: str, song: str)->None:

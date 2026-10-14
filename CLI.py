@@ -48,10 +48,21 @@ class CL_Interface:
         def _(e):
             self.myPlayer.forward5s()
 
-    def __searchSong(self: CL_Interface)->str:
+    def __searchSong(self)->str:
         song=str(input_dialog(text="Search for a song (cancel or leave blank to go back):",
                               title="Search window", style=self.__style).run())
         return song
+
+    def __searchPlaylist(self)->str:
+        playlist=str(input_dialog(text="Type the playlist's name (cancel or leave blank to go back):",
+                                  title="Playlist window",
+                                  style=self.__style).run())
+
+        return playlist
+
+
+    
+
 
     def __run(self)->None:
         marker=0
@@ -138,6 +149,32 @@ class CL_Interface:
                     #if user chooses 'quit'
                     else: print("...Coming back to menu...")
 #####
+
+                elif (choice=="5"):
+                    result = radiolist_dialog(
+                        title="Playlist commands dialog",
+                        text="Which one do you choose?",
+                        values=[
+                            ("a_s", "Add a new song to a playlist"),
+                            ("rm_s", "Remove a song from a playlist"),
+                            ("a_pl", "Add a playlist to the queue"),
+                            ("loop", "Loop a playlist"),
+                            ("show", "Show the playlist"),
+                            ("mk", "Make a new playlist"),
+                            ("rm_pl", "Delete a playlist"),
+                            ("q", "Quit this dialog")
+                        ],
+                        style=self.__style
+                    ).run()
+                    print()
+
+                    if (result!="q"):
+                        playlist=self.__searchPlaylist()
+
+
+                    else: print("...Coming back to menu...")
+
+
 
                 elif (choice=="6"):
                     self.myPlayer.quit()
