@@ -24,15 +24,21 @@ class CL_Interface:
 
         @self.myKeys.add('escape','l')
         def _(e):
+            print()
             self.myPlayer.toggleLoop()
+            e.app.reset()
 
         @self.myKeys.add('c-left')
         def _(e):
+            print()
             self.myPlayer.playPrevious()
+            e.app.reset()
 
         @self.myKeys.add('c-right')
         def _(e):
+            print()
             self.myPlayer.playNext()
+            e.app.reset()
 
         @self.myKeys.add('left')
         def _(e):
@@ -124,6 +130,7 @@ class CL_Interface:
                             continue
 
                         i=1
+                        print("Current queue:")
                         for x in self.myPlayer.myQueue:
                             print(f"{i}. {x}")
                             i+=1
