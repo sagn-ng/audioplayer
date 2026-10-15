@@ -185,6 +185,10 @@ class CL_Interface:
 #####
 
                 elif (choice=="6"):
+                    self.myPlayer.showLibrary()
+#####
+
+                elif (choice=="7"):
                     self.myPlayer.quit()
                     break
 
@@ -219,7 +223,8 @@ class CL_Interface:
         print("3. Previous/Next") #done
         print("4. Queue management") #done
         print("5. Playlist management")
-        print("6. Thoát (Quit)") #done   
+        print("6. Library")
+        print("7. Quit the program") #done   
 
 if (__name__=="__main__"):
     S=CL_Interface()

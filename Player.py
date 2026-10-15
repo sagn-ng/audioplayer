@@ -91,6 +91,14 @@ class MusicPlayer:
         mixer.quit()
 
 
+    def showLibrary(self)->None:
+        print("Your library:")
+        i=1
+        for song in self.__store:
+            print(f"{i}. {song}")
+            i+=1
+
+
     def play(self, song: str, startTime: float = 0.0)->None:
         if (song not in self.__store):
             print("This song is not in your list!")
@@ -261,7 +269,7 @@ class MusicPlayer:
             print(f"There is no playlist named '{pList}'!")
         
         else:
-            i=0
+            i=1
             print(f"Songs in '{pList}':")
             for t in os.listdir(f"{self.__dir_for_pls}/{pList}"):
                 x=(os.path.splitext(t))[0]
