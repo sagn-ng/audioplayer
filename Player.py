@@ -203,6 +203,18 @@ class MusicPlayer:
         self.myQueue.remove(song)
 
 
+    def printQueue(self)->None:
+        if (not self.myQueue):
+            print("The queue is empty! Nothing to show.")
+            return
+
+        i=1
+        print("Current queue:")
+        for x in self.myQueue:
+            print(f"{i}. {x}")
+            i+=1
+
+
     def makeNewPlaylist(self, pList: str)->None:
         if (os.path.exists(f"{self.__dir_for_pls}/{pList}")):
             print("There's already a list with this name!")
@@ -243,6 +255,19 @@ class MusicPlayer:
             os.remove(f"{self.__dir_for_pls}/{pList}/{self.__store[song]}")
             print(f"'{song}' has been remove from '{pList}' successfully.")
             
+
+    def printPlaylist(self, pList: str)->None:
+        if (not os.path.exists(f"{self.__dir_for_pls}/{pList}")):
+            print(f"There is no playlist named '{pList}'!")
+        
+        else:
+            i=0
+            print(f"Songs in '{pList}':")
+            for t in os.listdir(f"{self.__dir_for_pls}/{pList}"):
+                x=(os.path.splitext(t))[0]
+                print(f"{i}. {x}")
+                i+=1
+        
 
     def addPlaylistToQueue(self, pList: str)->None:
         if (not os.path.exists(f"{self.__dir_for_pls}/{pList}")):

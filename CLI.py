@@ -48,10 +48,13 @@ class CL_Interface:
         def _(e):
             self.myPlayer.forward5s()
 
+
     def __searchSong(self)->str:
-        song=str(input_dialog(text="Search for a song (cancel or leave blank to go back):",
-                              title="Search window", style=self.__style).run())
-        return song
+        s=input_dialog(text="Search for a song (cancel or leave blank to go back):",
+                              title="Search window", style=self.__style).run()
+        if (s==None): return ""
+        return str(s)
+
 
     def __searchPlaylist(self)->str:
         playlist=str(input_dialog(text="Type the playlist's name (cancel or leave blank to go back):",
@@ -59,9 +62,6 @@ class CL_Interface:
                                   style=self.__style).run())
 
         return playlist
-
-
-    
 
 
     def __run(self)->None:
@@ -117,7 +117,7 @@ class CL_Interface:
                         values=[
                             ("a", "Add a new song to queue"),
                             ("rm", "Remove a song from queue"),
-                            ("p", "Show the queue"),
+                            ("p", "Print the queue"),
                             ("q", "Quit this dialog")
                         ],
                         style=self.__style
@@ -135,16 +135,7 @@ class CL_Interface:
                         else: self.myPlayer.removeFromQueue(song)
 
                     #if user chooses 'print'
-                    elif (result=="p"):
-                        if (not self.myPlayer.myQueue):
-                            print("The queue is empty! Nothing to show.")
-                            continue
-
-                        i=1
-                        print("Current queue:")
-                        for x in self.myPlayer.myQueue:
-                            print(f"{i}. {x}")
-                            i+=1
+                    elif (result=="p"): self.myPlayer.printQueue()
 
                     #if user chooses 'quit'
                     else: print("...Coming back to menu...")
@@ -168,21 +159,37 @@ class CL_Interface:
                     ).run()
                     print()
 
-                    if (result!="q"):
-                        playlist=self.__searchPlaylist()
+                    if (result=="q"):
+                        print("...Coming back to menu...")
+                        continue
+
+                    else:
+                        playlist=self.__searchPlaylist() #first, search for the playlist
+
+                        if (result=="a_s" or result=="rm_s"):
+                            song=self.__searchSong() #only 'a_s' and 'rm_s' requires a song
+
+                            if (song==""):
+                                print("...Coming back to menu")
+                                continue
+
+                            elif (result=="a_s"): self.myPlayer.addToPlaylist(playlist, song)
+                            else: self.myPlayer.removeFromPlaylist(playlist, song)
 
 
-                    else: print("...Coming back to menu...")
-
-
+                        elif (result=="a_pl"): self.myPlayer.addPlaylistToQueue(playlist)
+                        elif (result=="loop"): self.myPlayer.loopPlaylist(playlist)
+                        elif (result=="mk"): self.myPlayer.makeNewPlaylist(playlist)
+                        elif (result=="rm_pl"): self.myPlayer.deletePlaylist(playlist)
+                        else: self.myPlayer.printPlaylist(playlist) #result="show"
+#####
 
                 elif (choice=="6"):
                     self.myPlayer.quit()
                     break
 
 #####
-                else:
-                    print("Invalid choice!")
+                else: print("Invalid choice!")
 
             except (KeyboardInterrupt, EOFError):
                 self.myPlayer.quit()
@@ -202,21 +209,17 @@ class CL_Interface:
 
         self.__run()
 
+
     def printMenu(self)->None:
         print("\n" + "="*30)
         print("       MUSIC PLAYER MENU")
         print("="*30)
         print("1. Play a song (Search)") #done
         print("2. Pause/Unpause/Loop") #done
-        print("3. Previous/Next")
+        print("3. Previous/Next") #done
         print("4. Queue management") #done
         print("5. Playlist management")
-        print("6. Thoát (Quit)") #done
- 
-    #def searchToPlay(self)->None:
-    # 
-    #def QueueManagement(self)->None:
-    #
-    #def PlaylistManagement(self)->None:     
+        print("6. Thoát (Quit)") #done   
 
-A=CL_Interface()
+if (__name__=="__main__"):
+    S=CL_Interface()
