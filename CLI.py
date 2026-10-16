@@ -12,7 +12,7 @@ class CL_Interface:
         @self.myKeys.add('escape','q')
         def _(e):
             self.myPlayer.quit()
-            e.app.exit(result="6")
+            e.app.exit(result="7")
 
         @self.myKeys.add('s')
         def _(e):
